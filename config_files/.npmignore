@@ -1,0 +1,10 @@
+.idea/
+src/
+tests/
+.prettierignore
+.prettierrc.js
+.remarkrc
+.travis.yml
+jest.config.js
+ts*.json
+yarn.lock
