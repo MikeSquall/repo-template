@@ -26,6 +26,7 @@ PACKAGE_LIST=(
   "jest"
   "ts-jest"
   "@types/jest"
+  "typedoc"
 )
 
 HUSKY_CONF='
@@ -34,6 +35,23 @@ HUSKY_CONF='
     "hooks": {
       "pre-commit": "pretty-quick --staged"
     }
+  }
+}
+'
+
+SCRIPTS_CONF='
+{
+  "scripts": {
+    "build:ts": "tsc -p tsconfig.json",
+    "build": "yarn clean && yarn build:ts",
+    "clean": "rimraf lib",
+    "doc": "typedoc ./src/api --out ./doc --mode file --hideGenerator",
+    "test": "jest --maxWorkers=4 --env=jsdom",
+    "lint": "yarn lint:md && yarn lint:ts",
+    "lint:md": "remark . --output",
+    "lint:ts": "tslint --project tsconfig.lint.json",
+    "lint:fix": "yarn lint --fix",
+    "prettier": "prettier --write '{src,tests}/**/*.{ts,tsx,js,jsx}'"
   }
 }
 '
@@ -59,8 +77,13 @@ cd $REPO_NAME
 pwd
 $PACKAGE_MANAGER init
 
+jq --argjson scripts "$SCRIPTS_CONF" '. += $scripts' package.json > tmp.json
+mv tmp.json package.json
+echo "-> SCRIPTS_CONF added !"
+
 jq --argjson husky "$HUSKY_CONF" '. += $husky' package.json > tmp.json
 mv tmp.json package.json
+echo "-> HUSKY_CONF added !"
 
 [[ "$PACKAGE_MANAGER" -eq "yarn" ]] && yarn add -D ${PACKAGE_LIST[*]}
 [[ "$PACKAGE_MANAGER" -eq "npm" ]] && npm install ${PACKAGE_LIST[*]} --save-dev
